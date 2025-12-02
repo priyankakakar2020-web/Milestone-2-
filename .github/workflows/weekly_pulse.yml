@@ -43,37 +43,31 @@ jobs:
           echo "EMAIL_SENDER set: ${{ secrets.EMAIL_SENDER != '' }}"
           echo "EMAIL_PASSWORD set: ${{ secrets.EMAIL_PASSWORD != '' }}"
       
-      - name: Run full pipeline (Layers 1-3)
+      - name: Run integrated 4-layer pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: 'priyanka.kakar@sattva.co.in'
+          SMTP_HOST: 'smtp.gmail.com'
+          SMTP_PORT: '587'
           APP_ID: 'com.nextbillion.groww'
           PRODUCT_NAME: 'Groww'
           TIME_WINDOW_WEEKS: '12'
           TARGET_COUNT: '100'
           LANG: 'en'
           COUNTRY: 'in'
+          MIN_REVIEW_LENGTH: '100'
+          MAX_THEMES: '5'
+          MAX_WORD_COUNT: '250'
         run: |
-          echo "Running Layers 1-3: Data import, theme extraction, content generation"
-          python run_full_pipeline.py
-      
-      - name: Send weekly pulse email (Layer 4)
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_TO: 'priyanka.kakar@sattva.co.in'
-          EMAIL_FROM: ${{ secrets.EMAIL_SENDER }}
-          SMTP_HOST: 'smtp.gmail.com'
-          SMTP_PORT: '587'
-          SMTP_USER: ${{ secrets.EMAIL_SENDER }}
-          SMTP_PASS: ${{ secrets.EMAIL_PASSWORD }}
-        run: |
+          echo "Running integrated 4-layer pipeline"
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            echo "Running in dry-run mode (no email will be sent)"
-            python send_weekly_pulse.py --dry-run
+            echo "Dry run mode: Preview without sending"
+            python integrated_pipeline.py --dry-run
           else
-            echo "Sending weekly pulse email"
-            python send_weekly_pulse.py
+            echo "Production mode: Full pipeline with email delivery"
+            python integrated_pipeline.py
           fi
       
       - name: Upload artifacts
