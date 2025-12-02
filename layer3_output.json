@@ -1,0 +1,34 @@
+{
+  "title": "Weekly Product Pulse – Groww",
+  "overview": "This week's 115 user reviews highlight key areas for improvement. Top concern: KYC Verification Delays. Analysis covers 3 themes with actionable recommendations.",
+  "themes": [
+    {
+      "name": "KYC Verification Delays",
+      "summary": "0 users share mixed feedback about kyc verification delays, indicating this is a notable concern.",
+      "size": 45
+    },
+    {
+      "name": "Payment Failures",
+      "summary": "0 users share mixed feedback about payment failures, indicating this is a notable concern.",
+      "size": 38
+    },
+    {
+      "name": "App Performance",
+      "summary": "0 users share mixed feedback about app performance, indicating this is a notable concern.",
+      "size": 32
+    }
+  ],
+  "quotes": [],
+  "actions": [
+    "Investigate and address issues in KYC Verification Delays based on user feedback patterns.",
+    "Investigate and address issues in Payment Failures based on user feedback patterns.",
+    "Investigate and address issues in App Performance based on user feedback patterns."
+  ],
+  "metadata": {
+    "product": "Groww",
+    "week_start": "2025-11-19",
+    "week_end": "2025-11-25",
+    "total_reviews": 115,
+    "word_count": 114
+  }
+}

@@ -7,6 +7,7 @@ from cleaner import clean_text
 from storage import save_reviews, save_theme_counts
 from classifier import classify_week_reviews_llm
 from emailer import draft_weekly_email, generate_subject, scrub_pii, send_email, log_email_send
+from layer1_import import Layer1Pipeline
 
 # Configuration
 APP_ID = 'com.nextbillion.groww'
@@ -19,6 +20,12 @@ MAX_WEEKS = 12
 
 def fetch_and_process_reviews():
     print(f"Starting review import for {APP_ID}...")
+    print("=" * 60)
+    print("LAYER 1: DATA IMPORT & VALIDATION")
+    print("=" * 60)
+    
+    # Initialize Layer 1 pipeline
+    layer1 = Layer1Pipeline(APP_ID, LANG, COUNTRY)
     
     today = datetime.now()
     # We want reviews from [today - MAX_WEEKS weeks] to [today - 1 week]
@@ -44,21 +51,20 @@ def fetch_and_process_reviews():
     # So we can keep fetching older reviews.
     
     fetched_count = 0
+    layer1_passed = 0
     
     while True:
-        result, continuation_token = reviews(
-            APP_ID,
-            lang=LANG,
-            country=COUNTRY,
-            sort=Sort.NEWEST,
-            count=200, # Fetch a batch
-            continuation_token=continuation_token
-        )
+        # Layer 1: Import & Validation
+        batch, continuation_token = layer1.process_batch(count=200, continuation_token=continuation_token)
         
-        if not result:
-            break
+        if not batch:
+            if not continuation_token:
+                break
+            continue
+        
+        layer1_passed += len(batch)
             
-        for r in result:
+        for r in batch:
             review_date = r['at']
             
             # If review is newer than end_date, skip it (too recent)
@@ -104,8 +110,8 @@ def fetch_and_process_reviews():
             
             all_reviews.append(review_data)
             
-        fetched_count += len(result)
-        print(f"Fetched {fetched_count} raw reviews, {len(all_reviews)} qualified reviews so far...")
+        fetched_count += len(batch)
+        print(f"Layer 1 processed: {layer1_passed} reviews passed, {len(all_reviews)} qualified so far...")
 
         # Check exit condition
         # If we have enough reviews AND we have covered the minimum date range (which we check inside the loop logic sort of)
@@ -120,11 +126,19 @@ def fetch_and_process_reviews():
         # For now, let's trust the ">= TARGET_COUNT" logic.
         
         # Optimization: If the last review in this batch is older than start_date AND we have enough reviews, stop.
-        last_review_date = result[-1]['at']
+        last_review_date = batch[-1]['at']
         if last_review_date < start_date and len(all_reviews) >= TARGET_COUNT:
             break
 
-    print(f"Total qualified reviews collected: {len(all_reviews)}")
+    print(f"\n{'='*60}")
+    print(f"LAYER 1 STATISTICS")
+    print(f"{'='*60}")
+    stats = layer1.get_stats()
+    print(f"Total reviews processed through Layer 1: {layer1_passed}")
+    print(f"Total unique reviews tracked: {stats['total_seen_reviews']}")
+    print(f"Deduplication state file: {stats['dedup_state_file']}")
+    print(f"Final qualified reviews: {len(all_reviews)}")
+    print(f"{'='*60}\n")
     
     # Save reviews
     # The user wants "Store weekly buckets".

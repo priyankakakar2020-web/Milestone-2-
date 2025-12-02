@@ -3,14 +3,17 @@ import json
 from typing import List, Dict
 
 try:
-    from openai import OpenAI
-    _openai_client = OpenAI()
+    import google.generativeai as genai
+    _gemini_api = os.getenv("GEMINI_API_KEY")
+    if _gemini_api:
+        genai.configure(api_key=_gemini_api)
+    _gemini_ready = bool(_gemini_api)
 except Exception:
-    _openai_client = None
+    _gemini_ready = False
 
 
 def _llm_available() -> bool:
-    return _openai_client is not None and bool(os.getenv("OPENAI_API_KEY"))
+    return _gemini_ready
 
 
 def _chunk_list(items: List[str], size: int) -> List[List[str]]:
@@ -47,13 +50,10 @@ def summarize_theme(theme: str, review_texts: List[str], chunk_size: int = 20) -
                 "Keep everything concise. Avoid marketing fluff."
             )
             try:
-                resp = _openai_client.chat.completions.create(
-                    model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0
-                )
-                content = resp.choices[0].message.content
-                data = json.loads(content)
+                model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+                model = genai.GenerativeModel(model_name)
+                resp = model.generate_content(prompt)
+                data = json.loads(resp.text or "{}")
                 points = data.get("key_points", [])
                 quotes = data.get("review_quotes", [])
             except Exception:
@@ -129,13 +129,10 @@ def synthesize_weekly_pulse(week_start: str, week_end: str, theme_summaries: Lis
             "{\n  \"title\": \"...\",\n  \"overview\": \"...\",\n  \"themes\": [\n    {\"name\": \"...\", \"summary\": \"...\"},\n    ...\n  ],\n  \"quotes\": [\"...\", \"...\", \"...\"],\n  \"actions\": [\"...\", \"...\", \"...\"]\n}\n"
         )
         try:
-            resp = _openai_client.chat.completions.create(
-                model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0
-            )
-            content = resp.choices[0].message.content
-            payload = json.loads(content)
+            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            model = genai.GenerativeModel(model_name)
+            resp = model.generate_content(prompt)
+            payload = json.loads(resp.text or "{}")
         except Exception:
             pass
 
@@ -163,13 +160,10 @@ def compress_note_if_needed(note: Dict, max_words: int = 250) -> Dict:
         _note_text(note)
     )
     try:
-        resp = _openai_client.chat.completions.create(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0
-        )
-        content = resp.choices[0].message.content
-        compressed = json.loads(content)
+        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        model = genai.GenerativeModel(model_name)
+        resp = model.generate_content(prompt)
+        compressed = json.loads(resp.text or "{}")
         return compressed
     except Exception:
         return note

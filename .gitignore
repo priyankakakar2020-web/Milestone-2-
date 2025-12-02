@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Sensitive Files
+.env
+*.log
+email_send_log.csv
+email_tracking.json
+dedup_state.json
+scheduler_state.json
+
+# Output Files
+reviews_week_*.csv
+weekly_pulse_*.json
+layer3_output.json
+preview_email.html
+preview_email.txt
+demo_email.html
+demo_email.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test outputs
+*.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Models (if downloaded)
+models/
+*.pkl
+*.h5
+*.pth

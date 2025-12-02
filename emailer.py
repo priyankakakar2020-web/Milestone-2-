@@ -6,14 +6,17 @@ from datetime import datetime
 from typing import Dict
 
 try:
-    from openai import OpenAI
-    _openai_client = OpenAI()
+    import google.generativeai as genai
+    _gemini_api = os.getenv("GEMINI_API_KEY")
+    if _gemini_api:
+        genai.configure(api_key=_gemini_api)
+    _gemini_ready = bool(_gemini_api)
 except Exception:
-    _openai_client = None
+    _gemini_ready = False
 
 
 def _llm_available() -> bool:
-    return _openai_client is not None and bool(os.getenv("OPENAI_API_KEY"))
+    return _gemini_ready
 
 
 def generate_subject(product_name: str, week_start: str, week_end: str) -> str:
@@ -49,12 +52,10 @@ def draft_weekly_email(note_json: Dict, week_start: str, week_end: str, product_
             "Output plain text only (no HTML).\n"
         )
         try:
-            resp = _openai_client.chat.completions.create(
-                model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0
-            )
-            body = resp.choices[0].message.content
+            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            model = genai.GenerativeModel(model_name)
+            resp = model.generate_content(prompt)
+            body = resp.text or ""
             return body
         except Exception:
             pass

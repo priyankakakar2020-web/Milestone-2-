@@ -1,0 +1,2 @@
+timestamp,week_start,week_end,subject,recipient,status,attempts,error_message,pii_clean
+2025-12-02T21:45:12.823702,2025-11-19,2025-11-25,Weekly Product Pulse – Groww,priyanka.kakar@sattva.co.in,SENT,1,,True

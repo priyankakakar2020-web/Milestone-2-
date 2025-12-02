@@ -3,7 +3,6 @@
 """
 Simple keyword-based classifier to assign a review to one of the predefined themes.
 """
-
 from themes import THEMES
 
 def assign_theme(text: str) -> str:
@@ -23,10 +22,15 @@ import json
 from typing import List, Dict
 
 try:
-    from openai import OpenAI
-    _openai_client = OpenAI()
+    import google.generativeai as genai
+    _gemini_api = os.getenv("GEMINI_API_KEY")
+    if _gemini_api:
+        genai.configure(api_key=_gemini_api)
+    _gemini_ready = bool(_gemini_api)
 except Exception:
-    _openai_client = None
+    _gemini_ready = False
+def _llm_available() -> bool:
+    return _gemini_ready
 
 
 def get_allowed_themes() -> List[str]:
@@ -54,7 +58,7 @@ def _valid_theme(theme: str) -> bool:
 
 
 def _reprompt_single(review: Dict) -> str:
-    if _openai_client is None or not os.getenv("OPENAI_API_KEY"):
+    if not _llm_available():
         return assign_theme(review.get("text", ""))
     allowed = ", ".join(get_allowed_themes())
     prompt = (
@@ -63,12 +67,10 @@ def _reprompt_single(review: Dict) -> str:
         json.dumps({ "review_id": review.get("review_id"), "text": review.get("text", "") }, ensure_ascii=False)
     )
     try:
-        resp = _openai_client.chat.completions.create(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-            messages=[{ "role": "user", "content": prompt }],
-            temperature=0
-        )
-        theme = resp.choices[0].message.content.strip()
+        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        model = genai.GenerativeModel(model_name)
+        resp = model.generate_content(prompt)
+        theme = (resp.text or "").strip()
         return theme
     except Exception:
         return assign_theme(review.get("text", ""))
@@ -76,8 +78,7 @@ def _reprompt_single(review: Dict) -> str:
 
 def classify_reviews_llm(batch: List[Dict]) -> List[Dict]:
     """Classify a batch of reviews using LLM. Returns list of {review_id, chosen_theme, short_reason}."""
-    # Fallback to keyword heuristic if no API key
-    if _openai_client is None or not os.getenv("OPENAI_API_KEY"):
+    if not _llm_available():
         out = []
         for r in batch:
             theme = assign_theme(r.get("text", ""))
@@ -89,12 +90,10 @@ def classify_reviews_llm(batch: List[Dict]) -> List[Dict]:
         return out
     prompt = _build_classification_prompt(batch)
     try:
-        resp = _openai_client.chat.completions.create(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-            messages=[{ "role": "user", "content": prompt }],
-            temperature=0
-        )
-        content = resp.choices[0].message.content
+        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        model = genai.GenerativeModel(model_name)
+        resp = model.generate_content(prompt)
+        content = resp.text or "[]"
         data = json.loads(content)
     except Exception:
         # Fallback to heuristic

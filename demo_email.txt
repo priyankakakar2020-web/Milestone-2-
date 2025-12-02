@@ -1,0 +1,38 @@
+============================================================
+Weekly Product Pulse – Groww
+============================================================
+
+Groww | 2025-11-25 to 2025-12-01
+115 reviews analyzed
+
+------------------------------------------------------------
+OVERVIEW
+------------------------------------------------------------
+This week's 115 reviews highlight KYC delays, payment issues, and app performance concerns.
+
+------------------------------------------------------------
+TOP THEMES
+------------------------------------------------------------
+
+1. KYC Verification Delays (45 reviews)
+   Users frustrated with slow verification taking 5+ days with unclear rejection reasons.
+
+2. Payment Failures (38 reviews)
+   Frequent payment deductions without confirmation causing user distrust.
+
+------------------------------------------------------------
+USER FEEDBACK
+------------------------------------------------------------
+• "KYC verification took 5 days and failed twice."
+• "Payment deducted but order not confirmed."
+
+------------------------------------------------------------
+RECOMMENDED ACTIONS
+------------------------------------------------------------
+1. Add real-time status updates to KYC flow
+2. Implement automatic refund system
+
+============================================================
+This pulse was generated automatically from user feedback.
+Questions or feedback? Reply to this email.
+============================================================
