@@ -5,3 +5,4 @@ schedule
 sentence-transformers
 hdbscan
 scikit-learn
+flask
